@@ -41,3 +41,267 @@ extension UIView {
     }
 
 }
+
+
+extension UIImageView{
+    //we are able to extend properties in UIimageView class
+    public func downloaded(from url : URL, contentMode mode : ContentMode){
+        URLSession.shared.dataTask(with: url){
+            (data, res, err) in
+            guard let httpURLResponse = res as? HTTPURLResponse, httpURLResponse.statusCode == 200,
+                  let mimeType = res?.mimeType, mimeType.hasPrefix("image"),
+                  let data = data, err == nil,
+                  let image_data = UIImage(data : data)
+            else {print("fails"); return}
+            
+            //async or await (delay stuff)
+            DispatchQueue.main.async(){
+                [self] in
+                image = image_data
+            }
+        }.resume()
+    }
+    
+    public func downloaded(from link : String, contentMode mode : ContentMode){
+        guard let url = URL(string: link) else {return}
+        downloaded(from: url, contentMode: mode)
+    }
+}
+
+
+extension UIView {
+    func rotate360Degrees(_ duration: CFTimeInterval = 1.0, completionDelegate: CAAnimationDelegate? = nil) {
+        let rotateAnimation = CABasicAnimation(keyPath: "transform.rotation")
+        rotateAnimation.fromValue = 0.0
+        rotateAnimation.toValue = CGFloat(Double.pi * 2.0)
+        rotateAnimation.duration = duration
+        
+        if let delegate: CAAnimationDelegate = completionDelegate {
+            rotateAnimation.delegate = delegate
+        }
+        self.layer.add(rotateAnimation, forKey: nil)
+    }
+    func inputContainerView(image: UIImage, textField: UITextField? = nil,
+                            segmentedControl: UISegmentedControl? = nil) -> UIView {
+        let view = UIView()
+        
+        let imageView = UIImageView()
+        imageView.image = image
+        imageView.alpha = 0.87
+        view.addSubview(imageView)
+        
+        
+        if let textField = textField {
+            imageView.centerY(inView: view)
+            imageView.anchor(left: view.leftAnchor, paddingLeft: 8, width: 24, height: 24)
+            
+            view.addSubview(textField)
+            textField.centerY(inView: view)
+            textField.anchor(left: imageView.rightAnchor, bottom: view.bottomAnchor,
+                             right: view.rightAnchor, paddingLeft: 8, paddingBottom: 8)
+        }
+        
+        if let sc = segmentedControl {
+            imageView.anchor(top: view.topAnchor, left: view.leftAnchor,
+                             paddingTop: -8, paddingLeft: 8, width: 24, height: 24)
+            
+            view.addSubview(sc)
+            sc.anchor(left: view.leftAnchor, right: view.rightAnchor,
+                     paddingLeft: 8, paddingRight: 8)
+            sc.centerY(inView: view, constant: 8)
+        }
+        
+        let separatorView = UIView()
+        separatorView.backgroundColor = .lightGray
+        view.addSubview(separatorView)
+        separatorView.anchor(left: view.leftAnchor, bottom: view.bottomAnchor,
+                             right: view.rightAnchor, paddingLeft: 8, height: 0.75)
+        
+        return view
+    }
+    
+    func anchor(top: NSLayoutYAxisAnchor? = nil,
+                left: NSLayoutXAxisAnchor? = nil,
+                bottom: NSLayoutYAxisAnchor? = nil,
+                right: NSLayoutXAxisAnchor? = nil,
+                paddingTop: CGFloat = 0,
+                paddingLeft: CGFloat = 0,
+                paddingBottom: CGFloat = 0,
+                paddingRight: CGFloat = 0,
+                width: CGFloat? = nil,
+                height: CGFloat? = nil) {
+        
+        translatesAutoresizingMaskIntoConstraints = false
+        
+        if let top = top {
+            topAnchor.constraint(equalTo: top, constant: paddingTop).isActive = true
+        }
+        
+        if let left = left {
+            leftAnchor.constraint(equalTo: left, constant: paddingLeft).isActive = true
+        }
+        
+        if let bottom = bottom {
+            bottomAnchor.constraint(equalTo: bottom, constant: -paddingBottom).isActive = true
+        }
+        
+        if let right = right {
+            rightAnchor.constraint(equalTo: right, constant: -paddingRight).isActive = true
+        }
+        
+        if let width = width {
+            widthAnchor.constraint(equalToConstant: width).isActive = true
+        }
+        
+        if let height = height {
+            heightAnchor.constraint(equalToConstant: height).isActive = true
+        }
+    }
+    
+    func centerX(inView view: UIView) {
+        translatesAutoresizingMaskIntoConstraints = false
+        centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+    }
+    
+    func centerY(inView view: UIView, leftAnchor: NSLayoutXAxisAnchor? = nil,
+                 paddingLeft: CGFloat = 0, constant: CGFloat = 0) {
+        
+        translatesAutoresizingMaskIntoConstraints = false
+        centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: constant).isActive = true
+        
+        if let left = leftAnchor {
+            anchor(left: left, paddingLeft: paddingLeft)
+        }
+    }
+    
+    func setDimensions(height: CGFloat, width: CGFloat) {
+        translatesAutoresizingMaskIntoConstraints = false
+        heightAnchor.constraint(equalToConstant: height).isActive = true
+        widthAnchor.constraint(equalToConstant: width).isActive = true
+    }
+    
+    func addShadow() {
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.55
+        layer.shadowOffset = CGSize(width: 0.5, height: 0.5)
+        layer.masksToBounds = false
+    }
+}
+
+
+extension UIView {
+    func damping() {
+        UIView.animate(withDuration: 0.15, delay: 0, usingSpringWithDamping: 0.2, initialSpringVelocity: 0.5, options: .curveEaseIn) {
+            self.transform = CGAffineTransform(scaleX: 0.92, y: 0.92)
+        } completion: { _ in
+            UIView.animate(withDuration: 0.15, delay: 0, usingSpringWithDamping: 0.2, initialSpringVelocity: 0.5, options: .curveEaseIn) {
+                self.transform = CGAffineTransform(scaleX: 1, y: 1)
+
+            }
+        }
+
+    }
+}
+
+
+extension UITextField {
+    func textField(withPlaceholder placeholder: String, isSecureTextEntry: Bool) -> UITextField {
+        let tf = UITextField()
+        tf.borderStyle = .none
+        tf.font = UIFont.systemFont(ofSize: 16)
+        tf.textColor = .white
+        tf.keyboardAppearance = .dark
+        tf.isSecureTextEntry = isSecureTextEntry
+        tf.attributedPlaceholder = NSAttributedString(string: placeholder, attributes: [NSAttributedString.Key.foregroundColor : UIColor.lightGray])
+        return tf
+    }
+}
+
+
+
+extension UIImage {
+    enum JPEGQuality : CGFloat {
+        case lowest = 0
+        case low = 0.25
+        case medium = 0.5
+        case high = 0.75
+        case heighest = 1
+    }
+    
+    func jpeg (_ jpegQuality : JPEGQuality) -> Data? {
+        return jpegData(compressionQuality: jpegQuality.rawValue)
+    }
+}
+
+
+func L_feedback() {
+    let generator = UIImpactFeedbackGenerator(style: .light)
+    generator.impactOccurred()
+}
+func M_feedback() {
+    let generator = UIImpactFeedbackGenerator(style: .medium)
+    generator.impactOccurred()
+}
+func H_feedback() {
+    let generator = UIImpactFeedbackGenerator(style: .heavy)
+    generator.impactOccurred()
+}
+
+func R_feedback() {
+    let generator = UIImpactFeedbackGenerator(style: .rigid)
+    generator.impactOccurred()
+}
+extension UITextView {
+    
+
+    func addDoneButton(title: String, target: Any, selector: Selector) {
+        
+        let toolBar = UIToolbar(frame: CGRect(x: 0.0,
+                                              y: 0.0,
+                                              width: UIScreen.main.bounds.size.width,
+                                              height: 50))//1
+        toolBar.backgroundColor = UIColor.gray.withAlphaComponent(0.5)
+
+        
+        
+        let flexible = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)//2
+        let barButton = UIBarButtonItem(title: title, style: .plain, target: target, action: selector)//3
+        toolBar.setItems([flexible,barButton], animated: false)//4
+        self.inputAccessoryView = toolBar//5
+        
+    }
+
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        
+
+        //Hide the keyboard
+        textField.resignFirstResponder()
+        return true
+    }
+}
+
+
+
+class nav : UIViewController{
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .white
+        configureNavigationBar()
+    }
+    func configureNavigationBar() {
+        self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
+        self.navigationController?.navigationBar.shadowImage = UIImage()
+        self.navigationController?.navigationBar.isTranslucent = true
+        navigationItem.title = "About Us"
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
+        navigationController?.navigationBar.tintColor = UIColor.black
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(handle_dismiss))
+    }
+    @objc func handle_dismiss() {
+        self.dismiss(animated: true)
+    }
+
+}
+
