@@ -1,0 +1,35 @@
+
+func convertTo2DArray(_ array: [Int], rows: Int) -> [[Int]] {
+    var result: [[Int]] = []
+    var currentRow: [Int] = []
+
+    for element in array {
+        currentRow.append(element)
+
+        if currentRow.count == 2 {
+            result.append(currentRow)
+            currentRow = []
+        }
+    }
+
+    // If there are any remaining elements in the last row
+    if !currentRow.isEmpty {
+        result.append(currentRow)
+    }
+
+    // If there are fewer rows than 'n', add empty rows
+    while result.count < rows {
+        result.append([])
+    }
+
+    return result
+}
+
+// Example usage:
+let originalArray = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+let n = 3
+let twoDArray = convertTo2DArray(originalArray, rows: n)
+
+for row in twoDArray {
+    print(row)
+}
